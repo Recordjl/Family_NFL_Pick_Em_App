@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #222;
+    }
+
+    header {
+      background: #0b1f3a;
+      color: white;
+      padding: 16px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .container {
+      padding: 16px;
+      max-width: 650px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+
+    input, select, button {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      margin: 8px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    button {
+      background: #0b66c3;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #555;
+    }
+
+    button.danger {
+      background: #a31515;
+    }
+
+    .game-title {
+      font-weight: bold;
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    .teams {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .team-btn {
+      padding: 12px;
+      background: #e8edf3;
+      color: #222;
+      border-radius: 8px;
+      text-align: center;
+      border: 2px solid transparent;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .team-btn.selected {
+      background: #d8ecff;
+      border-color: #0b66c3;
+    }
+
+    .team-btn.locked {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .triple-row {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .triple-row input {
+      width: auto;
+    }
+
+    .locked-label {
+      color: #a31515;
+      font-weight: bold;
+      margin-top: 8px;
+      font-size: 13px;
+    }
+
+    .small {
+      color: #666;
+      font-size: 13px;
+    }
+
+    .error {
+      background: #ffe3e3;
+      color: #8a0000;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .success {
+      background: #16a34a;
+      color: white;
+      padding: 14px;
+      border-radius: 10px;
+      margin-bottom: 14px;
+      font-weight: bold;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+      font-size: 14px;
+      vertical-align: top;
+    }
+
+    th {
+      background: #0b1f3a;
+      color: white;
+    }
+
+    .table-scroll {
+      overflow-x: auto;
+    }
+
+    .correct {
+      color: #0d6626;
+      font-weight: bold;
+    }
+
+    .incorrect {
+      color: #a31515;
+      font-weight: bold;
+    }
+
+    .pending {
+      color: #666;
+      font-weight: bold;
+    }
+
+    .pick-history-row {
+      font-size: 13px;
+    }
+
+    .pick-cell {
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    .pick-star {
+      color: #f59e0b;
+      font-weight: bold;
+    }
+
+    .no-pick {
+      color: #aaa;
+    }
+
+    .all-picks-total {
+      font-weight: bold;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <header>Family NFL Pick Em</header>
+
+  <div class="container">
+
+    <div id="message"></div>
+
+    <div id="loginView" class="card">
+      <h2>Login</h2>
+      <input id="nameInput" placeholder="Name">
+      <input id="pinInput" placeholder="PIN" type="password">
+      <button onclick="login()">Login</button>
+    </div>
+
+    <div id="appView" class="hidden">
+      <div class="card">
+        <h2 id="welcomeText"></h2>
+        <div id="weekText" class="small"></div>
+        <button class="secondary" onclick="refreshApp()">Refresh</button>
+      </div>
+
+      <div class="card">
+        <h3>Instructions</h3>
+        <p class="small">
+          Pick exactly 8 games. Choose one of those picks as your 3-point pick.
+          Games lock 1 hour before kickoff.
+        </p>
+      </div>
+
+      <div id="gamesContainer"></div>
+
+      <button onclick="submitPicks()">Submit Picks</button>
+
+      <div class="card">
+        <h3>Weekly Standings</h3>
+        <div id="weeklyStandingsContainer"></div>
+      </div>
+
+      <div class="card">
+        <h3>All Picks</h3>
+        <p class="small">
+          Public view of everyone’s submitted picks for the current week.
+          A ★ marks the 3-point pick.
+        </p>
+        <div id="allPicksContainer" class="table-scroll"></div>
+      </div>
+
+      <div class="card">
+        <h3>Season Standings</h3>
+        <div id="standingsContainer"></div>
+      </div>
+
+      <div class="card">
+        <h3>Season Standings by Week</h3>
+        <p class="small">Each week column shows points earned that week.</p>
+        <div id="seasonByWeekContainer" class="table-scroll"></div>
+      </div>
+
+      <div class="card">
+        <h3>My Pick History</h3>
+        <div id="pickHistoryContainer" class="table-scroll"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let currentUser = null;
+    let currentPin = null;
+    let appData = null;
+    let selected = {};
+
+    function showMessage(text, type) {
+      const el = document.getElementById('message');
+      el.innerHTML = `<div class="${type}">${text}</div>`;
+
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+
+      setTimeout(() => {
+        el.innerHTML = '';
+      }, 5000);
+    }
+
+    function login() {
+      const name = document.getElementById('nameInput').value;
+      const pin = document.getElementById('pinInput').value;
+
+      google.script.run
+        .withSuccessHandler(res => {
+          if (!res.success) {
+            showMessage(res.message, 'error');
+            return;
+          }
+
+          currentUser = res.user;
+          currentPin = pin;
+
+          document.getElementById('loginView').classList.add('hidden');
+          document.getElementById('appView').classList.remove('hidden');
+
+          refreshApp();
+        })
+        .withFailureHandler(err => {
+          showMessage(err.message, 'error');
+        })
+        .login(name, pin);
+    }
+
+    function refreshApp() {
+      google.script.run
+        .withSuccessHandler(data => {
+          appData = data;
+          selected = {};
+
+          appData.games.forEach(game => {
+            if (game.existingPick) {
+              selected[game.gameId] = {
+                pickedAbbr: game.existingPick.pickedAbbr,
+                isTriple: game.existingPick.isTriple
+              };
+            }
+          });
+
+          document.getElementById('welcomeText').innerText = `Welcome, ${currentUser.name}`;
+          document.getElementById('weekText').innerText = `Current Week: Week ${data.week}`;
+
+          renderGames();
+          renderWeeklyStandings();
+          renderAllPicks();
+          renderStandings();
+          renderSeasonByWeek();
+          renderPickHistory();
+        })
+        .withFailureHandler(err => {
+          showMessage(err.message, 'error');
+        })
+        .getAppData(currentUser.userId);
+    }
+
+    function renderGames() {
+      const container = document.getElementById('gamesContainer');
+      container.innerHTML = '';
+
+      if (!appData.games || appData.games.length === 0) {
+        container.innerHTML = `
+          <div class="card">
+            <h3>No games loaded yet</h3>
+            <p class="small">
+              No games have been imported for Week ${appData.week}.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      appData.games.forEach(game => {
+        const kickoff = new Date(game.kickoffUTC);
+        const existing = selected[game.gameId] || null;
+
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        card.innerHTML = `
+          <div class="game-title">
+            ${escapeHtml(game.awayAbbr)} ${formatSpread(game.awaySpread)}
+            at
+            ${escapeHtml(game.homeAbbr)} ${formatSpread(game.homeSpread)}
+          </div>
+
+          <div class="small">${kickoff.toLocaleString()}</div>
+
+          <div class="teams">
+            <div
+              class="team-btn ${existing && existing.pickedAbbr === game.awayAbbr ? 'selected' : ''} ${game.locked ? 'locked' : ''}"
+              onclick="selectTeam('${escapeAttr(game.gameId)}', '${escapeAttr(game.awayAbbr)}')"
+            >
+              ${escapeHtml(game.awayAbbr)}<br>
+              <span class="small">${escapeHtml(game.awayTeam)}</span>
+            </div>
+
+            <div
+              class="team-btn ${existing && existing.pickedAbbr === game.homeAbbr ? 'selected' : ''} ${game.locked ? 'locked' : ''}"
+              onclick="selectTeam('${escapeAttr(game.gameId)}', '${escapeAttr(game.homeAbbr)}')"
+            >
+              ${escapeHtml(game.homeAbbr)}<br>
+              <span class="small">${escapeHtml(game.homeTeam)}</span>
+            </div>
+          </div>
+
+          <label class="triple-row">
+            <input
+              type="radio"
+              name="triple"
+              ${existing && existing.isTriple ? 'checked' : ''}
+              onclick="setTriple('${escapeAttr(game.gameId)}')"
+            >
+            3-point pick
+          </label>
+
+          ${game.locked ? '<div class="locked-label">Locked</div>' : ''}
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function formatSpread(spread) {
+      const n = Number(spread);
+      if (Number.isNaN(n)) return '';
+      if (n > 0) return `+${n}`;
+      return `${n}`;
+    }
+
+    function selectTeam(gameId, teamAbbr) {
+      const game = appData.games.find(g => g.gameId === gameId);
+
+      if (!game) {
+        showMessage('Game not found.', 'error');
+        return;
+      }
+
+      if (game.locked) {
+        showMessage('This game is locked.', 'error');
+        return;
+      }
+
+      const currentPick = selected[gameId];
+
+      if (currentPick && currentPick.pickedAbbr === teamAbbr) {
+        delete selected[gameId];
+        renderGames();
+        return;
+      }
+
+      selected[gameId] = {
+        pickedAbbr: teamAbbr,
+        isTriple: currentPick ? currentPick.isTriple : false
+      };
+
+      renderGames();
+    }
+
+    function setTriple(gameId) {
+      const game = appData.games.find(g => g.gameId === gameId);
+
+      if (!game) {
+        showMessage('Game not found.', 'error');
+        renderGames();
+        return;
+      }
+
+      if (game.locked) {
+        showMessage('This game is locked.', 'error');
+        renderGames();
+        return;
+      }
+
+      if (!selected[gameId] || !selected[gameId].pickedAbbr) {
+        showMessage('Select a team before marking it as your 3-point pick.', 'error');
+        renderGames();
+        return;
+      }
+
+      Object.keys(selected).forEach(id => {
+        selected[id].isTriple = false;
+      });
+
+      selected[gameId].isTriple = true;
+      renderGames();
+    }
+
+    function submitPicks() {
+      const picks = Object.entries(selected)
+        .filter(([gameId, p]) => p.pickedAbbr)
+        .map(([gameId, p]) => ({
+          gameId,
+          pickedAbbr: p.pickedAbbr,
+          isTriple: Boolean(p.isTriple)
+        }));
+
+      if (picks.length !== 8) {
+        showMessage(`You selected ${picks.length}. You must select exactly 8 games.`, 'error');
+        return;
+      }
+
+      const tripleCount = picks.filter(p => p.isTriple).length;
+      if (tripleCount !== 1) {
+        showMessage('You must choose exactly one 3-point pick.', 'error');
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(res => {
+          if (res.success) {
+            showMessage('Picks were submitted successfully!', 'success');
+            refreshApp();
+          } else {
+            showMessage(res.message, 'error');
+          }
+        })
+        .withFailureHandler(err => {
+          showMessage(err.message, 'error');
+        })
+        .submitPicks({
+          userId: currentUser.userId,
+          pin: currentPin,
+          week: appData.week,
+          picks
+        });
+    }
+
+    function renderWeeklyStandings() {
+      const container = document.getElementById('weeklyStandingsContainer');
+
+      if (!appData.weeklyStandings || appData.weeklyStandings.length === 0) {
+        container.innerHTML = '<p class="small">No weekly standings yet.</p>';
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Name</th>
+              <th>Pts</th>
+              <th>Correct</th>
+              <th>Picks</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      appData.weeklyStandings.forEach((s, index) => {
+        html += `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${escapeHtml(s.name)}</td>
+            <td>${s.weekPoints}</td>
+            <td>${s.weekCorrect}</td>
+            <td>${s.picksSubmitted}/8</td>
+          </tr>
+        `;
+      });
+
+      html += `
+          </tbody>
+        </table>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    function renderAllPicks() {
+      const container = document.getElementById('allPicksContainer');
+
+      if (!appData.allPicks) {
+        container.innerHTML = '<p class="small">No all-picks data yet.</p>';
+        return;
+      }
+
+      if (appData.allPicks.isRevealed === false) {
+        const revealText = appData.allPicks.revealAt
+          ? new Date(appData.allPicks.revealAt).toLocaleString()
+          : 'after all games lock';
+
+        container.innerHTML = `
+          <div class="error">
+            All Picks are hidden until the full week is locked.
+          </div>
+          <p class="small">
+            Picks will be revealed after the last game of the week locks.
+          </p>
+          <p class="small">
+            Estimated reveal time: <strong>${escapeHtml(revealText)}</strong>
+          </p>
+        `;
+        return;
+      }
+
+      if (
+        !appData.allPicks.games ||
+        !appData.allPicks.rows ||
+        appData.allPicks.games.length === 0
+      ) {
+        container.innerHTML = '<p class="small">No all-picks data yet.</p>';
+        return;
+      }
+
+      const games = appData.allPicks.games;
+      const rows = appData.allPicks.rows;
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+      `;
+
+      games.forEach(game => {
+        html += `<th>${escapeHtml(game.awayAbbr)}@${escapeHtml(game.homeAbbr)}</th>`;
+      });
+
+      html += `
+              <th>Total</th>
+              <th>Correct</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      rows.forEach(row => {
+        html += `
+          <tr>
+            <td>
+              ${escapeHtml(row.name)}
+              <br>
+              <span class="small">${row.picksSubmitted}/8 picks</span>
+            </td>
+        `;
+
+        games.forEach(game => {
+          const pick = row.picksByGame[game.gameId];
+
+          if (!pick) {
+            html += `<td class="pick-cell no-pick">—</td>`;
+            return;
+          }
+
+          let resultClass = 'pending';
+
+          if (pick.resultLabel === 'Correct' || pick.resultLabel === 'Push - Correct') {
+            resultClass = 'correct';
+          } else if (pick.resultLabel === 'Incorrect') {
+            resultClass = 'incorrect';
+          }
+
+          const tripleStar = pick.isTriple
+            ? `<span class="pick-star">★</span>`
+            : '';
+
+          const pointsText = pick.resultLabel !== 'Pending'
+            ? `<br><span class="${resultClass}">${pick.points} pt${pick.points === 1 ? '' : 's'}</span>`
+            : '';
+
+          html += `
+            <td class="pick-cell">
+              ${tripleStar} ${escapeHtml(pick.pickedAbbr)}
+              ${pointsText}
+            </td>
+          `;
+        });
+
+        html += `
+            <td class="all-picks-total">${row.weekPoints}</td>
+            <td>${row.weekCorrect}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+          </tbody>
+        </table>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    function renderStandings() {
+      const container = document.getElementById('standingsContainer');
+
+      if (!appData.standings || appData.standings.length === 0) {
+        container.innerHTML = '<p class="small">No season standings yet.</p>';
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Name</th>
+              <th>Pts</th>
+              <th>Correct</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      appData.standings.forEach((s, index) => {
+        html += `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${escapeHtml(s.name)}</td>
+            <td>${s.seasonPoints}</td>
+            <td>${s.seasonCorrect}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+          </tbody>
+        </table>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    function renderSeasonByWeek() {
+      const container = document.getElementById('seasonByWeekContainer');
+
+      if (
+        !appData.seasonByWeek ||
+        !appData.seasonByWeek.weeks ||
+        appData.seasonByWeek.weeks.length === 0
+      ) {
+        container.innerHTML = '<p class="small">No season-by-week data yet.</p>';
+        return;
+      }
+
+      const weeks = appData.seasonByWeek.weeks;
+      const rows = appData.seasonByWeek.rows;
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+      `;
+
+      weeks.forEach(week => {
+        html += `<th>W${week}</th>`;
+      });
+
+      html += `
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      rows.forEach(row => {
+        html += `
+          <tr>
+            <td>${escapeHtml(row.name)}</td>
+        `;
+
+        weeks.forEach(week => {
+          const weekData = row.weeks[String(week)];
+          const points = weekData ? weekData.points : 0;
+
+          html += `<td>${points}</td>`;
+        });
+
+        html += `
+            <td><strong>${row.totalPoints}</strong></td>
+          </tr>
+        `;
+      });
+
+      html += `
+          </tbody>
+        </table>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    function renderPickHistory() {
+      const container = document.getElementById('pickHistoryContainer');
+
+      if (!appData.pickHistory || appData.pickHistory.length === 0) {
+        container.innerHTML = '<p class="small">No pick history yet.</p>';
+        return;
+      }
+
+      let html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Week</th>
+              <th>Game</th>
+              <th>Pick</th>
+              <th>3PT</th>
+              <th>Result</th>
+              <th>Pts</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      appData.pickHistory.forEach(p => {
+        let resultClass = 'pending';
+
+        if (p.resultLabel === 'Correct' || p.resultLabel === 'Push - Correct') {
+          resultClass = 'correct';
+        } else if (p.resultLabel === 'Incorrect') {
+          resultClass = 'incorrect';
+        }
+
+        const scoreText =
+          p.awayScore !== '' && p.homeScore !== ''
+            ? `<br><span class="small">${escapeHtml(p.awayAbbr)} ${p.awayScore}, ${escapeHtml(p.homeAbbr)} ${p.homeScore}</span>`
+            : '';
+
+        html += `
+          <tr class="pick-history-row">
+            <td>W${p.week}</td>
+            <td>
+              ${escapeHtml(p.matchup)}
+              ${scoreText}
+            </td>
+            <td>${escapeHtml(p.pickedAbbr)}</td>
+            <td>${p.isTriple ? 'Yes' : ''}</td>
+            <td class="${resultClass}">${escapeHtml(p.resultLabel)}</td>
+            <td>${p.points}</td>
+          </tr>
+        `;
+      });
+
+      html += `
+          </tbody>
+        </table>
+      `;
+
+      container.innerHTML = html;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function escapeAttr(value) {
+      return String(value ?? '')
+        .replaceAll('\\', '\\\\')
+        .replaceAll("'", "\\'")
+        .replaceAll('"', '&quot;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;');
+    }
+  </script>
+</body>
+</html>

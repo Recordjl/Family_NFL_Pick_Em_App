@@ -1,0 +1,4 @@
+# Spreadsheets contain the Odds API key, player names and PINs
+*.xlsx
+.env
+.clasprc.json
