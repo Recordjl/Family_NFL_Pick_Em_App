@@ -2,55 +2,111 @@
 <html>
 <head>
   <base target="_top">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
   <style>
+    :root {
+      --navy: #0b1f3a;
+      --blue: #0b66c3;
+      --blue-light: #d8ecff;
+      --gray-bg: #f4f6f8;
+      --gray-card: #ffffff;
+      --gray-border: #d7dde5;
+      --text: #222;
+      --muted: #5f6b7a;
+      --danger: #a31515;
+      --success: #16a34a;
+      --warning: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      width: 100%;
+      min-height: 100%;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
     body {
       margin: 0;
+      width: 100%;
+      min-height: 100%;
       font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      color: #222;
+      background: var(--gray-bg);
+      color: var(--text);
+      font-size: 16px;
+      line-height: 1.4;
     }
 
     header {
-      background: #0b1f3a;
+      background: var(--navy);
       color: white;
-      padding: 16px;
+      padding: 18px 14px;
       text-align: center;
       font-size: 22px;
       font-weight: bold;
+      line-height: 1.2;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: 0 2px 8px rgba(0,0,0,.18);
     }
 
     .container {
-      padding: 16px;
-      max-width: 650px;
+      width: 100%;
+      max-width: 760px;
       margin: 0 auto;
+      padding: 14px;
+      padding-bottom: 28px;
     }
 
     .card {
-      background: white;
-      border-radius: 12px;
-      padding: 14px;
+      background: var(--gray-card);
+      border-radius: 14px;
+      padding: 16px;
       margin-bottom: 14px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+      box-shadow: 0 2px 10px rgba(0,0,0,.08);
+      overflow: hidden;
     }
 
-    input, select, button {
+    h2,
+    h3 {
+      margin-top: 0;
+      line-height: 1.2;
+    }
+
+    input,
+    select,
+    button {
       width: 100%;
       box-sizing: border-box;
-      padding: 12px;
+      padding: 14px;
       margin: 8px 0;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 1px solid #ccc;
       font-size: 16px;
+      min-height: 48px;
+    }
+
+    input,
+    select {
+      background: white;
     }
 
     button {
-      background: #0b66c3;
+      background: var(--blue);
       color: white;
       border: none;
       font-weight: bold;
       cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    button:active {
+      transform: scale(.99);
     }
 
     button.secondary {
@@ -58,36 +114,54 @@
     }
 
     button.danger {
-      background: #a31515;
+      background: var(--danger);
+    }
+
+    .submit-picks-btn {
+      font-size: 18px;
+      min-height: 54px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0,0,0,.18);
     }
 
     .game-title {
       font-weight: bold;
-      font-size: 15px;
+      font-size: 16px;
       margin-bottom: 8px;
+      line-height: 1.35;
     }
 
     .teams {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      gap: 10px;
+      margin-top: 12px;
     }
 
     .team-btn {
-      padding: 12px;
+      padding: 14px 10px;
+      min-height: 76px;
       background: #e8edf3;
       color: #222;
-      border-radius: 8px;
+      border-radius: 12px;
       text-align: center;
       border: 2px solid transparent;
       font-weight: bold;
       cursor: pointer;
       user-select: none;
+      touch-action: manipulation;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 3px;
     }
 
     .team-btn.selected {
-      background: #d8ecff;
-      border-color: #0b66c3;
+      background: var(--blue-light);
+      border-color: var(--blue);
+      box-shadow: 0 0 0 2px rgba(11,102,195,.12);
     }
 
     .team-btn.locked {
@@ -95,42 +169,51 @@
       cursor: not-allowed;
     }
 
+    .team-btn .small {
+      line-height: 1.2;
+    }
+
     .triple-row {
-      margin-top: 10px;
+      margin-top: 12px;
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 14px;
+      gap: 10px;
+      font-size: 15px;
+      min-height: 44px;
     }
 
     .triple-row input {
-      width: auto;
+      width: 22px;
+      height: 22px;
+      min-height: 22px;
+      margin: 0;
+      flex: 0 0 auto;
     }
 
     .locked-label {
-      color: #a31515;
+      color: var(--danger);
       font-weight: bold;
       margin-top: 8px;
-      font-size: 13px;
+      font-size: 14px;
     }
 
     .small {
-      color: #666;
-      font-size: 13px;
+      color: var(--muted);
+      font-size: 14px;
     }
 
     .error {
       background: #ffe3e3;
       color: #8a0000;
-      padding: 10px;
-      border-radius: 8px;
+      padding: 12px;
+      border-radius: 10px;
       margin-bottom: 12px;
       font-weight: bold;
       text-align: center;
     }
 
     .success {
-      background: #16a34a;
+      background: var(--success);
       color: white;
       padding: 14px;
       border-radius: 10px;
@@ -138,6 +221,14 @@
       font-weight: bold;
       text-align: center;
       box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    }
+
+    .table-scroll {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 12px;
     }
 
     table {
@@ -148,7 +239,8 @@
       overflow: hidden;
     }
 
-    th, td {
+    th,
+    td {
       padding: 10px;
       border-bottom: 1px solid #eee;
       text-align: left;
@@ -157,12 +249,25 @@
     }
 
     th {
-      background: #0b1f3a;
+      background: var(--navy);
       color: white;
+      white-space: nowrap;
     }
 
-    .table-scroll {
-      overflow-x: auto;
+    td {
+      white-space: normal;
+    }
+
+    .table-scroll table {
+      min-width: 560px;
+    }
+
+    #allPicksContainer table {
+      min-width: 900px;
+    }
+
+    #seasonByWeekContainer table {
+      min-width: 700px;
     }
 
     .correct {
@@ -171,7 +276,7 @@
     }
 
     .incorrect {
-      color: #a31515;
+      color: var(--danger);
       font-weight: bold;
     }
 
@@ -190,7 +295,7 @@
     }
 
     .pick-star {
-      color: #f59e0b;
+      color: var(--warning);
       font-weight: bold;
     }
 
@@ -205,6 +310,122 @@
     .hidden {
       display: none;
     }
+
+    @media (max-width: 600px) {
+      body {
+        font-size: 17px;
+        background: #eef2f6;
+      }
+
+      header {
+        font-size: 20px;
+        padding: 16px 12px;
+      }
+
+      .container {
+        padding: 10px;
+        padding-bottom: 88px;
+        max-width: none;
+      }
+
+      .card {
+        padding: 15px;
+        border-radius: 14px;
+        margin-bottom: 12px;
+      }
+
+      h2 {
+        font-size: 22px;
+      }
+
+      h3 {
+        font-size: 18px;
+      }
+
+      input,
+      select,
+      button {
+        font-size: 17px;
+        min-height: 52px;
+        padding: 14px;
+      }
+
+      .game-title {
+        font-size: 16px;
+      }
+
+      .small {
+        font-size: 14px;
+      }
+
+      .team-btn {
+        min-height: 82px;
+        padding: 14px 8px;
+        font-size: 17px;
+      }
+
+      .triple-row {
+        font-size: 16px;
+      }
+
+      .submit-picks-btn {
+        position: sticky;
+        bottom: calc(10px + env(safe-area-inset-bottom));
+        z-index: 15;
+        margin-top: 8px;
+        margin-bottom: 16px;
+        min-height: 58px;
+        font-size: 18px;
+        border-radius: 14px;
+        box-shadow: 0 5px 16px rgba(0,0,0,.28);
+      }
+
+      th,
+      td {
+        font-size: 14px;
+        padding: 9px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .teams {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .team-btn {
+        min-height: 68px;
+      }
+
+      .game-title {
+        font-size: 15px;
+      }
+
+      .card {
+        padding: 14px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      header {
+        font-size: 18px;
+      }
+
+      .container {
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+
+      input,
+      select,
+      button {
+        font-size: 16px;
+      }
+
+      .small {
+        font-size: 13px;
+      }
+    }
   </style>
 </head>
 
@@ -217,8 +438,8 @@
 
     <div id="loginView" class="card">
       <h2>Login</h2>
-      <input id="nameInput" placeholder="Name">
-      <input id="pinInput" placeholder="PIN" type="password">
+      <input id="nameInput" placeholder="Name" autocomplete="name">
+      <input id="pinInput" placeholder="PIN" type="password" inputmode="numeric" autocomplete="current-password">
       <button onclick="login()">Login</button>
     </div>
 
@@ -232,14 +453,19 @@
       <div class="card">
         <h3>Instructions</h3>
         <p class="small">
-          Pick exactly 8 games. Choose one of those picks as your 3-point pick.
-          Games lock 1 hour before kickoff.
+          Pick up to 8 games each week. You can submit one game at a time or
+          several at once, and come back later to add more until you reach 8.
+          Choose one of your picks as your 3-point pick.
+        </p>
+        <p class="small">
+          Each game locks <strong id="lockText">1 minute</strong> before kickoff.
+          Once a game locks, its pick cannot be added, changed, or removed.
         </p>
       </div>
 
       <div id="gamesContainer"></div>
 
-      <button onclick="submitPicks()">Submit Picks</button>
+      <button class="submit-picks-btn" onclick="submitPicks()">Submit Picks</button>
 
       <div class="card">
         <h3>Weekly Standings</h3>
@@ -275,6 +501,8 @@
   </div>
 
   <script>
+    const MAX_PICKS = 8;
+
     let currentUser = null;
     let currentPin = null;
     let appData = null;
@@ -336,6 +564,8 @@
 
           document.getElementById('welcomeText').innerText = `Welcome, ${currentUser.name}`;
           document.getElementById('weekText').innerText = `Current Week: Week ${data.week}`;
+
+          document.getElementById('lockText').innerText = formatLockMinutes(data.lockMinutes);
 
           renderGames();
           renderWeeklyStandings();
@@ -417,6 +647,12 @@
       });
     }
 
+    function formatLockMinutes(minutes) {
+      const n = Number(minutes);
+      if (!Number.isFinite(n) || n <= 0) return 'right';
+      return n === 1 ? '1 minute' : `${n} minutes`;
+    }
+
     function formatSpread(spread) {
       const n = Number(spread);
       if (Number.isNaN(n)) return '';
@@ -442,6 +678,11 @@
       if (currentPick && currentPick.pickedAbbr === teamAbbr) {
         delete selected[gameId];
         renderGames();
+        return;
+      }
+
+      if (!currentPick && Object.keys(selected).length >= MAX_PICKS) {
+        showMessage(`You already have ${MAX_PICKS} picks. Unselect one to pick a different game.`, 'error');
         return;
       }
 
@@ -491,21 +732,37 @@
           isTriple: Boolean(p.isTriple)
         }));
 
-      if (picks.length !== 8) {
-        showMessage(`You selected ${picks.length}. You must select exactly 8 games.`, 'error');
+      if (picks.length < 1) {
+        showMessage('Select at least 1 game before submitting.', 'error');
+        return;
+      }
+
+      if (picks.length > MAX_PICKS) {
+        showMessage(`You selected ${picks.length}. You can select at most ${MAX_PICKS} games.`, 'error');
         return;
       }
 
       const tripleCount = picks.filter(p => p.isTriple).length;
-      if (tripleCount !== 1) {
-        showMessage('You must choose exactly one 3-point pick.', 'error');
+      if (tripleCount > 1) {
+        showMessage('You can only have one 3-point pick.', 'error');
         return;
       }
 
       google.script.run
         .withSuccessHandler(res => {
           if (res.success) {
-            showMessage('Picks were submitted successfully!', 'success');
+            const remaining = MAX_PICKS - picks.length;
+            const tripleNote = tripleCount === 0
+              ? ' Remember to choose your 3-point pick.'
+              : '';
+            const remainingNote = remaining > 0
+              ? ` You can add ${remaining} more.`
+              : '';
+
+            showMessage(
+              `${picks.length} of ${MAX_PICKS} picks submitted!${remainingNote}${tripleNote}`,
+              'success'
+            );
             refreshApp();
           } else {
             showMessage(res.message, 'error');
@@ -531,17 +788,18 @@
       }
 
       let html = `
-        <table>
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Name</th>
-              <th>Pts</th>
-              <th>Correct</th>
-              <th>Picks</th>
-            </tr>
-          </thead>
-          <tbody>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Name</th>
+                <th>Pts</th>
+                <th>Correct</th>
+                <th>Picks</th>
+              </tr>
+            </thead>
+            <tbody>
       `;
 
       appData.weeklyStandings.forEach((s, index) => {
@@ -557,8 +815,9 @@
       });
 
       html += `
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       `;
 
       container.innerHTML = html;
@@ -688,16 +947,17 @@
       }
 
       let html = `
-        <table>
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Name</th>
-              <th>Pts</th>
-              <th>Correct</th>
-            </tr>
-          </thead>
-          <tbody>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Name</th>
+                <th>Pts</th>
+                <th>Correct</th>
+              </tr>
+            </thead>
+            <tbody>
       `;
 
       appData.standings.forEach((s, index) => {
@@ -712,8 +972,9 @@
       });
 
       html += `
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       `;
 
       container.innerHTML = html;
